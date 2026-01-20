@@ -16,44 +16,48 @@ export class ExamesService {
   ) {}
 
   async create(createExameDto: CreateExameDto) {
-    const jaExiste = await this.exameRepository.findOne({
-      where: { idempotencyKey: createExameDto.idempotencyKey },
-    });
-
-    if (jaExiste) {
-      return jaExiste;
-    }
-
-    const descricaoNormalizada = createExameDto.descricao?.trim().toLowerCase() || '';
-
-    const trintaMinutosAtras = new Date();
-    trintaMinutosAtras.setMinutes(trintaMinutosAtras.getMinutes() - 30);
-
-    const exameDuplicado = await this.exameRepository
-      .createQueryBuilder('exame')
-      .where('exame.pacienteId = :pacienteId', { pacienteId: createExameDto.pacienteId })
-      .andWhere('exame.modalidade = :modalidade', { modalidade: createExameDto.modalidade })
-      .andWhere('LOWER(TRIM(exame.descricao)) = :descricao', { descricao: descricaoNormalizada })
-      .andWhere('exame.createdAt >= :dataLimite', { dataLimite: trintaMinutosAtras })
-      .getOne();
-
-    if (exameDuplicado) {
-      throw new ConflictException(
-        'Já existe um exame igual nos últimos 30 minutos',
-      );
-    }
-
-    const paciente = await this.pacientesService.findOne(createExameDto.pacienteId);
-    if (!paciente) {
-      throw new BadRequestException('Paciente não encontrado');
-    }
-
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const exame = this.exameRepository.create(createExameDto);
+      const exameExistente = await queryRunner.manager
+        .createQueryBuilder(Exame, 'exame')
+        .where('exame.idempotencyKey = :key', { key: createExameDto.idempotencyKey })
+        .setLock('pessimistic_write')
+        .getOne();
+
+      if (exameExistente) {
+        await queryRunner.commitTransaction();
+        return exameExistente;
+      }
+
+      const descricaoNormalizada = createExameDto.descricao?.trim().toLowerCase() || '';
+      const trintaMinutosAtras = new Date();
+      trintaMinutosAtras.setMinutes(trintaMinutosAtras.getMinutes() - 30);
+
+      const exameDuplicado = await queryRunner.manager
+        .createQueryBuilder(Exame, 'exame')
+        .where('exame.pacienteId = :pacienteId', { pacienteId: createExameDto.pacienteId })
+        .andWhere('exame.modalidade = :modalidade', { modalidade: createExameDto.modalidade })
+        .andWhere('LOWER(TRIM(exame.descricao)) = :descricao', { descricao: descricaoNormalizada })
+        .andWhere('exame.createdAt >= :dataLimite', { dataLimite: trintaMinutosAtras })
+        .getOne();
+
+      if (exameDuplicado) {
+        await queryRunner.rollbackTransaction();
+        throw new ConflictException(
+          'Já existe um exame igual nos últimos 30 minutos',
+        );
+      }
+
+      const paciente = await this.pacientesService.findOne(createExameDto.pacienteId);
+      if (!paciente) {
+        await queryRunner.rollbackTransaction();
+        throw new BadRequestException('Paciente não encontrado');
+      }
+
+      const exame = queryRunner.manager.create(Exame, createExameDto);
       const resultado = await queryRunner.manager.save(exame);
       
       await queryRunner.commitTransaction();
