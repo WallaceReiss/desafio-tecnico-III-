@@ -1,0 +1,226 @@
+<div class="mt-4 px-4">
+  <!-- Header com botão voltar -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+      <i class="bi bi-clipboard2-pulse me-2"></i>
+      Prontuário do Paciente
+    </h2>
+    <button class="btn btn-outline-primary d-flex align-items-center" (click)="voltar()">
+      <i class="bi bi-arrow-left me-2"></i>
+      Voltar à Lista
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="mt-3 text-muted">Carregando informações do paciente...</p>
+  </div>
+
+  <!-- Erro -->
+  <div *ngIf="error" class="alert alert-danger d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div>{{ error }}</div>
+  </div>
+
+  <!-- Conteúdo Principal -->
+  <div *ngIf="paciente && !loading" class="row">
+    <!-- Coluna Esquerda - Informações do Paciente -->
+    <div class="col-lg-4 mb-4">
+      <!-- Card de Identificação -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-person-fill me-2"></i>
+            Identificação
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="patient-avatar text-center mb-3">
+            <div class="avatar-circle">
+              <i class="bi bi-person-fill"></i>
+            </div>
+            <h4 class="mt-3 mb-0">{{ paciente.nome }}</h4>
+          </div>
+          
+          <hr>
+          
+          <div class="info-item mb-3">
+            <div class="info-label">
+              <i class="bi bi-card-text me-2"></i>
+              CPF
+            </div>
+            <div class="info-value">{{ formatarDocumento(paciente.documento) }}</div>
+          </div>
+          
+          <div class="info-item mb-3">
+            <div class="info-label">
+              <i class="bi bi-calendar-event me-2"></i>
+              Data de Nascimento
+            </div>
+            <div class="info-value">{{ paciente.dataNascimento | date: 'dd/MM/yyyy' }}</div>
+            <small class="text-muted">{{ calcularIdade(paciente.dataNascimento) }} anos</small>
+          </div>
+          
+          <div class="info-item mb-3">
+            <div class="info-label">
+              <i class="bi bi-clock-history me-2"></i>
+              Cadastrado em
+            </div>
+            <div class="info-value">{{ paciente.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+          
+          <div class="info-item">
+            <div class="info-label">
+              <i class="bi bi-arrow-repeat me-2"></i>
+              Última Atualização
+            </div>
+            <div class="info-value">{{ paciente.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card de Estatísticas -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-graph-up me-2"></i>
+            Resumo de Atendimentos
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="stat-item">
+            <div class="stat-number">{{ exames.length }}</div>
+            <div class="stat-label">Exames Realizados</div>
+          </div>
+          <hr>
+          <div class="stat-item">
+            <div class="stat-number">{{ getModalidadesUnicas() }}</div>
+            <div class="stat-label">Modalidades Diferentes</div>
+          </div>
+          <hr>
+          <div class="stat-item" *ngIf="exames.length > 0">
+            <div class="stat-label">Último Exame</div>
+            <div class="stat-value">{{ getUltimoExame() | date: 'dd/MM/yyyy' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna Direita - Histórico de Exames -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="bi bi-file-medical-fill me-2"></i>
+            Histórico de Exames
+          </h5>
+          <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-light text-primary">{{ exames.length }} exame(s)</span>
+            <button class="btn btn-light btn-sm" (click)="showFormExame = !showFormExame">
+              <i class="bi" [class.bi-plus-circle]="!showFormExame" [class.bi-x-circle]="showFormExame"></i>
+              {{ showFormExame ? 'Cancelar' : 'Novo Exame' }}
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Formulário de Novo Exame -->
+          <div *ngIf="showFormExame" class="mb-4 p-3 bg-light rounded">
+            <h6 class="fw-bold mb-3">
+              <i class="bi bi-file-earmark-plus me-2"></i>
+              Registrar Novo Exame
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label fw-bold">Modalidade DICOM *</label>
+                <select class="form-select" [(ngModel)]="novoExame.modalidade" required>
+                  <option value="">Selecione...</option>
+                  <option *ngFor="let mod of modalidades" [value]="mod.valor">
+                    {{ mod.valor }} - {{ mod.nome }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label fw-bold">Descrição do Exame *</label>
+                <textarea 
+                  class="form-control" 
+                  [(ngModel)]="novoExame.descricao" 
+                  rows="2"
+                  placeholder="Descreva o motivo e detalhes do exame..."
+                  required></textarea>
+              </div>
+              <div class="col-12">
+                <button 
+                  class="btn btn-primary me-2" 
+                  (click)="salvarExame()"
+                  [disabled]="!novoExame.modalidade || !novoExame.descricao || salvandoExame">
+                  <span *ngIf="!salvandoExame">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Salvar Exame
+                  </span>
+                  <span *ngIf="salvandoExame">
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Salvando...
+                  </span>
+                </button>
+                <button class="btn btn-outline-secondary" (click)="cancelarNovoExame()" [disabled]="salvandoExame">
+                  <i class="bi bi-x-circle me-2"></i>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Sem exames -->
+          <div *ngIf="exames.length === 0" class="text-center py-5">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+            <p class="mt-3 text-muted">Nenhum exame registrado para este paciente.</p>
+            <p class="text-muted">Os exames realizados aparecerão aqui.</p>
+          </div>
+
+          <!-- Timeline de Exames -->
+          <div *ngIf="exames.length > 0" class="timeline">
+            <div *ngFor="let exame of exames; let i = index" class="timeline-item">
+              <div class="timeline-marker">
+                <i class="bi bi-circle-fill"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <span class="badge bg-purple me-2">{{ exame.modalidade }}</span>
+                    <small class="text-muted">{{ getModalidadeNome(exame.modalidade) }}</small>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      {{ exame.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                    </small>
+                    <button 
+                      class="btn btn-sm btn-outline-danger" 
+                      (click)="removerExame(exame.id!)"
+                      title="Remover exame">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <p class="mb-2"><strong>Descrição:</strong></p>
+                <p class="text-muted mb-2">{{ exame.descricao || 'Sem descrição adicional' }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="bi bi-person-circle me-1"></i>
+                    Criado por: <strong>{{ exame.createdBy || 'Sistema' }}</strong>
+                  </small>
+                  <small class="text-muted">
+                    <i class="bi bi-key me-1"></i>
+                    ID: <code>{{ exame.id }}</code>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

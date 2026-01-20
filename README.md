@@ -32,12 +32,17 @@ Para que eu tenha controle sobre o histórico clínico mesmo em situações de r
 📦 **Saída Esperada**
 
 - Endpoints criados:
+  - `POST /auth/register` - Registro de novos usuários
+  - `POST /auth/login` - Autenticação com JWT
   - `POST /pacientes`
   - `GET /pacientes?page=x&pageSize=y`
   - `POST /exames`
   - `GET /exames?page=x&pageSize=y`
 - Dados persistidos de forma segura e idempotente.
+- Sistema de autenticação JWT com bcrypt.
 - Front-end com:
+  - Login com autenticação JWT.
+  - Rotas protegidas com AuthGuard.
   - Listagem paginada de pacientes e exames.
   - Cadastro funcional via formulários.
   - UI amigável com mensagens de erro e loading.
@@ -71,6 +76,58 @@ Para que eu tenha controle sobre o histórico clínico mesmo em situações de r
 - Validação de campos no front-end e back-end.
 - Definição do enum de modalidades DICOM:
   - `CR, CT, DX, MG, MR, NM, OT, PT, RF, US, XA`
+- Sistema de autenticação JWT com bcrypt para hash de senhas.
+
+⸻
+
+🔐 **Autenticação e Segurança**
+
+**Sistema implementado:**
+- Autenticação baseada em JWT (JSON Web Tokens)
+- Hash de senhas com bcrypt (10 rounds)
+- Tokens com validade de 7 dias
+- Rotas protegidas no frontend com AuthGuard
+- HTTP Interceptor para injeção automática do token
+
+**Credenciais de Teste:**
+- Email: `admin@teste.com`
+- Senha: `123456`
+
+**Endpoints de Autenticação:**
+- `POST /auth/register` - Registro de novos usuários
+  ```json
+  {
+    "email": "usuario@exemplo.com",
+    "password": "senha123",
+    "nome": "Nome do Usuário"
+  }
+  ```
+  
+- `POST /auth/login` - Login e obtenção do token JWT
+  ```json
+  {
+    "email": "admin@teste.com",
+    "password": "123456"
+  }
+  ```
+  
+**Resposta de Login:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "uuid-do-usuario",
+    "email": "admin@teste.com",
+    "nome": "Administrador"
+  }
+}
+```
+
+**Usando o Token:**
+- O token deve ser enviado no header `Authorization: Bearer {token}`
+- No frontend, o token é armazenado no localStorage
+- O HTTP Interceptor adiciona automaticamente o token em todas as requisições
+- Rotas protegidas redirecionam para `/login` se não houver token válido
 
 ⸻
 
@@ -78,16 +135,21 @@ Para que eu tenha controle sobre o histórico clínico mesmo em situações de r
 
 | Cenário | Descrição | Resultado Esperado |
 |--------|-----------|--------------------|
-| 1 | Criar paciente com dados válidos | Paciente salvo com UUID único |
-| 2 | Criar paciente com CPF já existente | Erro de validação 409 - duplicidade |
-| 3 | Criar exame com paciente existente e idempotencyKey nova | HTTP 201 e exame salvo |
-| 4 | Reenviar exame com mesma idempotencyKey | HTTP 200 e retorno do mesmo exame |
-| 5 | Enviar múltiplas requisições simultâneas com mesma idempotencyKey | Apenas um exame persistido |
-| 6 | Criar exame com paciente inexistente | Erro 400 - paciente não encontrado |
-| 7 | Listar exames com paginação (10 por página) | Retorno paginado corretamente |
-| 8 | Listar pacientes com paginação | Lista retornada corretamente |
-| 9 | Frontend mostra loading durante chamada | Spinner visível enquanto carrega |
-| 10 | Frontend exibe erro de rede e botão “Tentar novamente” | Mensagem visível e reenvio possível |
+| 1 | Registrar usuário com dados válidos | Usuário criado com JWT retornado |
+| 2 | Fazer login com credenciais válidas | JWT token e dados do usuário retornados |
+| 3 | Fazer login com credenciais inválidas | Erro 401 - credenciais inválidas |
+| 4 | Acessar rota protegida sem token | Redirecionamento para /login |
+| 5 | Acessar rota protegida com token válido | Acesso permitido |
+| 6 | Criar paciente com dados válidos | Paciente salvo com UUID único |
+| 7 | Criar paciente com CPF já existente | Erro de validação 409 - duplicidade |
+| 8 | Criar exame com paciente existente e idempotencyKey nova | HTTP 201 e exame salvo |
+| 9 | Reenviar exame com mesma idempotencyKey | HTTP 200 e retorno do mesmo exame |
+| 10 | Enviar múltiplas requisições simultâneas com mesma idempotencyKey | Apenas um exame persistido |
+| 11 | Criar exame com paciente inexistente | Erro 400 - paciente não encontrado |
+| 12 | Listar exames com paginação (10 por página) | Retorno paginado corretamente |
+| 13 | Listar pacientes com paginação | Lista retornada corretamente |
+| 14 | Frontend mostra loading durante chamada | Spinner visível enquanto carrega |
+| 15 | Frontend exibe erro de rede e botão "Tentar novamente" | Mensagem visível e reenvio possível |
 | 11 | Enviar exame com modalidade inválida | Erro 400 - enum inválido |
 | 12 | Validação visual dos campos obrigatórios no formulário | Campos com feedback de erro |
 | 13 | Cobertura mínima de 80% nos testes unitários e integração | Relatório de cobertura válido |

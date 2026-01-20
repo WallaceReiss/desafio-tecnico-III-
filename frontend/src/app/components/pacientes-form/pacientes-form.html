@@ -1,0 +1,66 @@
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Cadastrar Paciente</h5>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nome Completo *</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            formControlName="nome"
+            [class.is-invalid]="form.get('nome')?.invalid && form.get('nome')?.touched">
+          <div class="invalid-feedback" *ngIf="form.get('nome')?.hasError('required')">
+            Nome é obrigatório
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label class="form-label">CPF *</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            formControlName="documento"
+            maxlength="14"
+            placeholder="000.000.000-00"
+            [class.is-invalid]="form.get('documento')?.invalid && form.get('documento')?.touched">
+          <div class="invalid-feedback" *ngIf="form.get('documento')?.hasError('required')">
+            CPF é obrigatório
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Data de Nascimento *</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            formControlName="dataNascimento"
+            [class.is-invalid]="form.get('dataNascimento')?.invalid && form.get('dataNascimento')?.touched">
+          <div class="invalid-feedback">
+            Data é obrigatória
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-success" *ngIf="successMessage">
+        <i class="bi bi-check-circle me-2"></i>{{ successMessage }}
+      </div>
+
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMessage }}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" [disabled]="loading || form.invalid">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          Salvar
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

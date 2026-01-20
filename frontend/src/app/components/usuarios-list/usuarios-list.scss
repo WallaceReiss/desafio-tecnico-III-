@@ -1,0 +1,29 @@
+.badge {
+  padding: 0.5rem 1rem;
+}
+
+.table {
+  th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+  }
+
+  tbody tr {
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(111, 66, 193, 0.05);
+    }
+  }
+
+  i {
+    font-size: 1.1rem;
+  }
+}
+
+.btn-outline-danger {
+  &:hover {
+    transform: scale(1.1);
+  }
+}

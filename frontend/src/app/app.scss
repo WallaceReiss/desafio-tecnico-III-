@@ -1,0 +1,19 @@
+// Tema roxo global
+:root {
+  --primary-purple: #6f42c1;
+  --primary-dark: #5a32a3;
+}
+
+.btn-primary {
+  background-color: var(--primary-purple) !important;
+  border-color: var(--primary-purple) !important;
+
+  &:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+  }
+}
+
+.text-primary {
+  color: var(--primary-purple) !important;
+}

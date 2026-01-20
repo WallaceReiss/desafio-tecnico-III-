@@ -1,0 +1,69 @@
+<div class="layout-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h4>Sistema Médico</h4>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a 
+        routerLink="/pacientes" 
+        class="nav-item"
+        [class.active]="isActive('/pacientes')"
+      >
+        <i class="bi bi-people-fill"></i>
+        <span>Pacientes</span>
+      </a>
+
+      <a 
+        routerLink="/exames" 
+        class="nav-item"
+        [class.active]="isActive('/exames')"
+      >
+        <i class="bi bi-file-medical-fill"></i>
+        <span>Exames</span>
+      </a>
+
+      <a 
+        routerLink="/usuarios" 
+        class="nav-item"
+        [class.active]="isActive('/usuarios')"
+      >
+        <i class="bi bi-person-badge-fill"></i>
+        <span>Usuários</span>
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <a 
+        (click)="logout()" 
+        class="nav-item logout"
+      >
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sair</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h5 class="mb-0">Bem-vindo!</h5>
+        <div class="user-info">
+          <i class="bi bi-person-circle"></i>
+          <span>{{ userName }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+
+<app-toast></app-toast>
+<app-confirm-dialog></app-confirm-dialog>

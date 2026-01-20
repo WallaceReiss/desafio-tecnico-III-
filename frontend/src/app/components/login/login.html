@@ -1,0 +1,53 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h2>Sistema Médico</h2>
+      <p class="text-muted">Faça login para continuar</p>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="error">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+    </div>
+
+    <form (ngSubmit)="login()">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input 
+          type="email" 
+          class="form-control" 
+          id="email" 
+          [(ngModel)]="email"
+          name="email"
+          placeholder="seu@email.com"
+          required
+        >
+      </div>
+
+      <div class="mb-3">
+        <label for="senha" class="form-label">Senha</label>
+        <input 
+          type="password" 
+          class="form-control" 
+          id="senha" 
+          [(ngModel)]="senha"
+          name="senha"
+          placeholder="Digite sua senha"
+          required
+        >
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn btn-primary w-100"
+        [disabled]="loading"
+      >
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <small class="text-muted">Primeiro acesso? Use qualquer email e senha para criar conta.</small>
+    </div>
+  </div>
+</div>
