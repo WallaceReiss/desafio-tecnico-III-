@@ -31,7 +31,6 @@ export class Layout {
     const confirmado = await this.confirm.confirmar('Deseja realmente sair?');
     if (confirmado) {
       this.authService.logout();
-      this.toast.info('Até logo!');
     }
   }
 

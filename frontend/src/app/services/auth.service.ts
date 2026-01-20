@@ -96,6 +96,10 @@ export class AuthService {
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+    
+    // Força navegação para login
+    this.router.navigate(['/login']).then(() => {
+      window.location.reload();
+    });
   }
 }

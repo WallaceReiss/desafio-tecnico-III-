@@ -8,7 +8,7 @@ import { ConfirmService, ConfirmDialog } from '../../../services/confirm.service
   imports: [CommonModule],
   template: `
     @if (dialog) {
-      <div class="modal-overlay" (click)="cancelar()">
+      <div class="modal-overlay">
         <div class="modal-dialog" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h5>{{ dialog.titulo || 'Confirmação' }}</h5>
@@ -17,11 +17,11 @@ import { ConfirmService, ConfirmDialog } from '../../../services/confirm.service
             <p>{{ dialog.mensagem }}</p>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="cancelar()">
-              Cancelar
+            <button type="button" class="btn btn-secondary" (click)="cancelar()">
+              Não
             </button>
-            <button class="btn btn-danger" (click)="confirmar()">
-              Confirmar
+            <button type="button" class="btn btn-primary" (click)="confirmar()">
+              Sim
             </button>
           </div>
         </div>
@@ -41,6 +41,7 @@ import { ConfirmService, ConfirmDialog } from '../../../services/confirm.service
       justify-content: center;
       z-index: 10000;
       animation: fadeIn 0.2s;
+      pointer-events: auto;
     }
 
     @keyframes fadeIn {
@@ -55,6 +56,9 @@ import { ConfirmService, ConfirmDialog } from '../../../services/confirm.service
       max-width: 450px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       animation: slideDown 0.3s ease-out;
+      position: relative;
+      z-index: 10001;
+      pointer-events: auto;
     }
 
     @keyframes slideDown {
@@ -104,6 +108,9 @@ import { ConfirmService, ConfirmDialog } from '../../../services/confirm.service
       font-size: 14px;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
+      z-index: 10002;
+      pointer-events: auto;
     }
 
     .btn-secondary {
@@ -113,6 +120,15 @@ import { ConfirmService, ConfirmDialog } from '../../../services/confirm.service
 
     .btn-secondary:hover {
       background: #5a6268;
+    }
+
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
     }
 
     .btn-danger {
